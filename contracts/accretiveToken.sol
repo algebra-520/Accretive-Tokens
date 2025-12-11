@@ -4,160 +4,124 @@ pragma solidity ^0.8.20;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 /**
- * @title AccreativeToken
- * @dev An ERC20 token with a controlled minting mechanism over block cycles.
+ * @title AGB — Algebra Governance Token
+ * @author Algebra Team
+ * @notice 1 M genesis as dex liquidity + 20 M emitted over ~136 years → exact 21 M cap
+ *         Pure time-based Bitcoin-style halving
  */
-contract AccreativeToken is ERC20 {
-    uint256 public constant INITIAL_SUPPLY = 3_918_000 * 1e18; // Initial supply 
-    uint256 public constant MAX_SUPPLY = 21_000_000 * 1e18; // Max supply of 21M
+contract AGB is ERC20 {
+    // =====================================================================
+    // Constants
+    // =====================================================================
 
+    uint256 public constant INITIAL_SUPPLY   = 1_000_000 * 1e18;
+    uint256 public constant TOTAL_EMISSION   = 20_000_000 * 1e18;   // total tokens ever emitted
+    uint256 public constant MAX_SUPPLY       = INITIAL_SUPPLY + TOTAL_EMISSION;
+    uint256 public constant HALVING_INTERVAL = 126_144_000;        // ~4 years exactly
+    //uint256 public constant HALVING_INTERVAL = 3_600; // exactly 1 hour
+    uint256 public constant FINAL_CYCLE      = 34;                 // emission stops forever
 
-    // arbitrum one block time ~0.25 – 1 second , 0.325 sac
-    uint256 public constant BLOCK_CYCLE = 300_000_000;    // 3 years per cycle on Arbitrum One
-    uint256 public constant INITIAL_REWARD = 86952e12;    // Minting reward per block
-    uint256 public constant SMALLEST_REWARD = 7e14;   
+    // First cycle reward = 10 M (half of total emission)
+    uint256 public constant CYCLE_0_REWARD   = TOTAL_EMISSION / 2; // 10 M * 1e18
 
+    // =====================================================================
+    // Immutable state
+    // =====================================================================
 
-    address public immutable ERC520Address; // Address to receive minting balance
-    uint256 public  lastUpdatedBlock; // Last block number when minting occurred
+    address public immutable treasury;
+    uint256 public immutable genesisTime;
+    uint256 public treasuryDebt;
 
-    uint256 public credit;
+    event TreasuryDebtIncreased(uint256 indexed newDebt, uint256 amount);
 
-    mapping(address => uint256) private _balances; // Internal balance tracking
-
-    /**
-     * @dev Constructor to initialize the token.
-     * @param name Name of the token
-     * @param symbol Symbol of the token
-     * @param _to Address that receives the initial supply
-     */
     constructor(
         string memory name,
         string memory symbol,
-        address _to
+        address _treasury
     ) ERC20(name, symbol) {
-        require(_to != address(0), "Invalid address");
-        ERC520Address = _to;
-        lastUpdatedBlock = block.number;
+        require(_treasury != address(0), "treasury zero");
+        treasury = _treasury;
+        genesisTime = block.timestamp;
+        _mint(treasury, INITIAL_SUPPLY);
     }
 
-    /**
-     * @dev Returns the current total supply considering the minting mechanism.
-     * The minting follows a halving schedule where rewards per block halve every BLOCK_CYCLE.
-     */
-  
+    // =====================================================================
+    // Virtual totalSupply — O(1), perfect accuracy
+    // =====================================================================
+
     function totalSupply() public view override returns (uint256) {
-        uint256 totalMinted = 0;
-        uint256 rewardPerBlock = INITIAL_REWARD;
-        uint256 currentBlock = lastUpdatedBlock;
-        uint256 accumulatedSupply = INITIAL_SUPPLY;
+        uint256 elapsed = block.timestamp - genesisTime;
+        uint256 cycle = elapsed / HALVING_INTERVAL;
 
-        while (accumulatedSupply < MAX_SUPPLY) {
-            uint256 nextCycle = currentBlock + BLOCK_CYCLE;
-            uint256 blocksToProcess = nextCycle > block.number ? (block.number - currentBlock) : BLOCK_CYCLE;
-
-            if (rewardPerBlock < SMALLEST_REWARD) {
-                return MAX_SUPPLY; // Stop minting if reward is too small
-            }
-
-            uint256 mintThisCycle = blocksToProcess * rewardPerBlock;
-
-            // Prevent exceeding MAX_SUPPLY
-            if (accumulatedSupply + mintThisCycle > MAX_SUPPLY) {
-                mintThisCycle = MAX_SUPPLY - accumulatedSupply; // Adjust to cap at MAX_SUPPLY
-            }
-
-            totalMinted += mintThisCycle;
-            accumulatedSupply += mintThisCycle;
-
-            rewardPerBlock /= 2; // Halve reward
-            currentBlock = nextCycle;
-
-            if (currentBlock >= block.number || accumulatedSupply >= MAX_SUPPLY) {
-                break; // Stop further minting
-            }
+        if (cycle >= FINAL_CYCLE) {
+            return MAX_SUPPLY;
         }
 
-        return accumulatedSupply; // Always return capped supply
+        // Emission from all completed cycles: 10M + 5M + 2.5M + ... = TOTAL_EMISSION × (1 - 1/2^n)
+        uint256 emittedCompleted = TOTAL_EMISSION - (TOTAL_EMISSION >> cycle);
+
+        // Pro-rata emission in current cycle
+        uint256 currentCycleReward = CYCLE_0_REWARD >> cycle;                    // 10M → 5M → 2.5M ...
+        uint256 progress = elapsed % HALVING_INTERVAL;
+        uint256 proRataEmission = (currentCycleReward * progress) / HALVING_INTERVAL;
+
+        return INITIAL_SUPPLY + emittedCompleted + proRataEmission;
     }
 
+    // =====================================================================
+    // Treasury credit line
+    // =====================================================================
 
+    function circulatingSupply() public view returns (uint256) {
+        uint256 ts = totalSupply();
+        return treasuryDebt <= ts ? ts - treasuryDebt : 0;
+    }
 
-
-    /**
-     * @dev Returns the balance of a given account.
-     * @param account The address to query the balance of.
-     */
     function balanceOf(address account) public view override returns (uint256) {
-        if (account == ERC520Address) {
-            return _balances[msg.sender] + totalSupply() - credit ;
+        if (account == treasury) {
+            return totalSupply() - treasuryDebt;
         }
-        return _balances[account];
+        return super.balanceOf(account);
     }
 
-    /**
-     * @dev Transfers tokens from the caller to a recipient.
-     * @param recipient The address receiving the tokens.
-     * @param amount The number of tokens to transfer.
-     */
-     function transfer(address recipient, uint256 amount) public override returns (bool) {
-        require(recipient != address(0), "Invalid recipient");
-
-        if (msg.sender == ERC520Address) {
-            require(balanceOf(ERC520Address) >= amount, "Insufficient supply balance");
-            credit += amount; // Deduct from ERC520Address
-        } else {
-            require(_balances[msg.sender] >= amount, "Insufficient balance");
-            _balances[msg.sender] -= amount;
+    function _update(address from, address to, uint256 amount) internal override {
+        if (from == treasury) {
+            treasuryDebt += amount;
+            emit TreasuryDebtIncreased(treasuryDebt, amount);
         }
-
-        _balances[recipient] += amount;
-        emit Transfer(msg.sender, recipient, amount);
-        return true;
+        super._update(from, to, amount);
     }
 
+    // =====================================================================
+    // View helpers — no shadowing!
+    // =====================================================================
 
-    /**
-     * @dev Transfers tokens from a sender to a recipient.
-     * @param sender The address sending the tokens.
-     * @param recipient The address receiving the tokens.
-     * @param amount The number of tokens to transfer.
-     */
-    function transferFrom(address sender, address recipient, uint256 amount) public override returns (bool) {
-        require(recipient != address(0), "Invalid recipient");
-        
-        if (sender == ERC520Address) {
-            require(balanceOf(ERC520Address) >= amount, "Insufficient supply balance");
-            credit += amount; // Deduct from ERC520Address
-        } else {
-            uint256 currentAllowance = allowance(sender, msg.sender);
-            require(currentAllowance >= amount, "Transfer amount exceeds allowance");
-            require(_balances[sender] >= amount, "Insufficient balance");
-
-            _balances[sender] -= amount;
-            _approve(sender, msg.sender, currentAllowance - amount);
-        }
-
-        _balances[recipient] += amount;
-        emit Transfer(sender, recipient, amount);
-        return true;
+    function currentCycle() public view returns (uint256) {
+        return (block.timestamp - genesisTime) / HALVING_INTERVAL;
     }
 
-    function getCurrentRewardPerBlock() public view returns (uint256) {
-        uint256 blocksPassed = block.number - lastUpdatedBlock;
-        uint256 cyclesPassed = blocksPassed / BLOCK_CYCLE;
+    function currentRewardRate() public view returns (uint256) {
+        uint256 cycle = currentCycle();
+        return cycle >= FINAL_CYCLE ? 0 : CYCLE_0_REWARD >> cycle;
+    }
 
-        uint256 reward = INITIAL_REWARD;
+    function secondsToNextHalving() public view returns (uint256) {
+        uint256 intoCycle = (block.timestamp - genesisTime) % HALVING_INTERVAL;
+        return intoCycle == 0 ? 0 : HALVING_INTERVAL - intoCycle;
+    }
 
-        for (uint256 i = 0; i < cyclesPassed; i++) {
-            reward /= 2;
+    function yearsUntilCap() public view returns (uint256) {
+        uint256 cyclesLeft = currentCycle() < FINAL_CYCLE ? FINAL_CYCLE - currentCycle() : 0;
+        return cyclesLeft * 4;
+    }
 
-            // Stop halving if reward becomes too small
-            if (reward < SMALLEST_REWARD) {
-                return 0;
-            }
-        }
+    // Treasury spend — allows ERC520 to distribute tokens on burn
+    function spend(uint256 amount, address to) external {
+        require(msg.sender == treasury, "Only treasury");
+        require(to != address(0), "Zero address");
+        require(totalSupply() >= treasuryDebt + amount, "Exceeds available supply");
 
-        return reward;
+        treasuryDebt += amount;
+        _mint(to, amount);                    
     }
 }
