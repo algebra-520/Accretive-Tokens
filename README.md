@@ -1,82 +1,107 @@
-# ERC-520: 💎 Accretive Tokens 
+# AGB-ART • Accretive Art on Ethereum  
+**Algebra → AGB (token) + AGB-ART (NFT)**  
+An enhanced, internally audited fork of the legendary ERC520 Accretive Token standard.
 
-<img src="https://github.com/user-attachments/assets/b8e002ae-23e6-4dd5-ae8c-8d133e9f95d9" width="500">
+GitHub: https://github.com/ERC520/Accretive-Tokens (original)  
+This repository: A living, community-governed fork created to power digital, media, and AI-generated art initiatives.
 
-ERC-520 introduces **Accretive Tokens**, an **experimental and innovative asset class** that combines **ERC-721 NFTs with an ERC-20 valuation token**. Unlike traditional NFTs, Accretive Tokens **accrue value over time** through a structured appreciation model. Just like diamonds in the real world, Accretive Tokens represent a store of value in crypto, with intrinsic worth that grows over time.
+> “Every burn makes every remaining holder richer — forever.”  
+> That is the promise of the ERC520 accretive model.
 
-Each ERC-721 NFT represents a unique digital collectible, while the ERC-20 valuation token provides **liquidity and measurable worth**. This dual-token mechanism ensures that **Accretive Tokens are not just collectibles but evolving financial assets**, pioneering a **new paradigm for NFTs with real, sustainable value growth**.  
+### The Story of AGB-ART
 
-## 🚀 How ERC-520 Works:
+In 2025, a group of artists, AI researchers, and crypto-native builders came together under the Morpheus umbrella to ask a simple but radical question:
 
-### 1️⃣ ERC-721 NFT (The Collectible Asset)  
-- Represents a **unique, non-fungible Accretive Token** with built-in scarcity.  
-- Minted under a **tiered rarity system** that determines **initial value and appreciation potential**.  
-- Can be **held for long-term appreciation or liquidated** into ERC-20 valuation tokens.  
+> What if an NFT collection could become a self-funding, ever-appreciating treasury for its holders — without royalties, without middlemen, and without ever diluting?
 
-### 2️⃣ ERC-20 Valuation Token (The Liquid Asset)  
-- Every Accretive Token has an **intrinsic base value** backed by an ERC-20 token.  
-- NFTs can be **converted into valuation tokens** through a liquidation mechanism.  
-- The ERC-20 token has a **fixed supply of 21 million**, ensuring **deflationary tokenomics**.  
+They found the answer in ERC520 — the cleanest, most elegant deflationary mechanism ever written in Solidity.
 
-Together, these two elements form an **experimental yet structured tokenomic system** where **NFTs grow in value and can be converted into liquid assets**.  
+They forked it, battle-tested it, and turned it into **AGB-ART**:  
+- 2,100 Genesis NFTs (AGB-ART)  
+- Paired with 21,000,000 AGB tokens (ERC-20)  
+- Backed by a permanent, ever-growing liquidity reserve
 
----
+As a thank-you to the original ERC520 creators and to seed the new ecosystem, the first 100 Morpheus contributors each received a whitelist for up to 21 free mints during the genesis phase.
 
-## 🔑 Key Features of ERC-520  
+The rest is now open to the world.
 
-### A. Experimental Accretive Token Minting and Scarcity Tiers  
-- NFTs are minted under **ERC-721**, with a structured **tiered scarcity model**.  
-- Each tier affects the **rarity, base value, and appreciation mechanics**.  
-- Only **520 NFTs** will ever be created, ensuring exclusivity.  
+### How the ERC520 Accretive Model Works
 
-### B. Burn and Valuation Mechanism  
-- Holders can **BURN** their NFTs into ERC-20 valuation tokens.  
-- Buring considers two core value components:  
-  1. **Base Value** – The original assigned value of the NFT at minting.  
-  2. **Accretive Value** – The accrued increase in value over time, following a predefined model.  
+| Phase          | What Happens                                                   | Effect on Holders                              |
+|----------------|----------------------------------------------------------------|------------------------------------------------|
+| Genesis Mint   | 2,100 NFTs minted at 0.25 units each                           | 100% of proceeds go to Creator                 |
+| Trading        | NFTs trade freely (OpenSea, Blur, etc.)                        | Normal secondary market — no royalties         |
+| Burn to Earn   | Any holder can burn their NFT after sell-out                   | Contract pays out AGB tokens instantly         |
+| Accretive Loop | Each burn reduces supply by 1                                  | Every remaining NFT now backed by more AGB     |
 
-### C. Accretive & Deflationary Tokenomics  
-- Accretive Tokens **increase in value over time**, with an appreciation period of up to **21 years**.  
-- The **total supply of the ERC-20 valuation token is capped at 21 million**, enforcing deflationary tokenomics.  
-- The **scarcity of both NFTs and valuation tokens** ensures a sustainable ecosystem.
-  
-<img width="771" alt="Screenshot 2025-04-25 at 6 31 26 AM" src="https://github.com/user-attachments/assets/8cc3201d-9a20-474f-9fec-9bfa240122c5" />
+→ Every burn permanently increases the AGB backing of all surviving NFTs.
+**The contract holds AGB tokens forever. Every single burn permanently increases the AGB backing of every NFT that is still alive.**
 
-<img width="430" alt="Screenshot 2025-04-25 at 6 34 17 AM" src="https://github.com/user-attachments/assets/dd171dc7-3322-4e93-bcf6-e46871ee073d" />
+### Detailed Mechanics (from the code)
 
+```solidity
+uint256 public constant LIQUIDIY_RESERVE = 1_000_000 * 1e18;     // 1M AGB pre-allocated to contract at deploy
+uint256 public MAX_GENESIS_SUPPLY = 2_100;
+uint256 public MAX_TOKEN_SUPPLY    = 21_000_000;
+```
 
-### D. Creator Rewards System  
-- **Every Burn event rewards the original creator**, ensuring ongoing incentives.  
-- A **2.5% Royalty from burning** is distributed to creators, maintaining a balanced ecosystem.  
-- This model **encourages long-term engagement and innovation**.  
+- 1,000,000 AGB are sent to the contract at deployment → permanent treasury
+- When an NFT is burned:
+  ```solidity
+  uint256 claimAmount = contractAGBBalance / currentTotalSupply;
+  95% → burner (holder)
+   2.5% → original creator
+   2.5% → ERC520.org platform
+  ```
+- The NFT is destroyed forever → totalSupply decreases by 1 → every remaining NFT now backed by more AGB
 
-### E. Creator Incentive Program  
-- **Go-Live Reward:** Upon launch, creators receive **52,000 valuation tokens** as an initial incentive.  
-- **Monthly Creator Reward:** For the first **12 months**, creators earn **52,000 valuation tokens per month** to support ecosystem development.  
+This creates the cleanest deflationary flywheel in NFT history.
 
+### Advantages of the ERC520 / AGB-ART Model
 
+| Feature                    | Traditional NFTs         | AGB-ART (ERC520)                         |
+|----------------------------|--------------------------|------------------------------------------|
+| Royalty enforcement        | Required (often bypassed)| Not needed — value accrues on burn        |
+| Long-term holder reward    | Only from resale         | Guaranteed AGB increase on every burn    |
+| Treasury sustainability    | Usually drains           | Grows forever with each burn             |
+| Creator ↔ Holder alignment | Often misaligned         | Perfectly aligned                        |
+| Exit liquidity             | Need a buyer             | Instant via burn                         |
+| Supply                     | Often unlimited          | Hard 2,100 cap                           |
+| Dilution risk              | High                     | Literally zero                           |
 
----
+### Tiered Rarity (on-chain provable randomness)
 
-## 🎮 Use Cases and Benefits  
+10 tiers (0–9) determined by Chainlink-style `prevrandao` + user nonce at mint time:
 
-✅ **Gamified Asset Marketplaces** – ERC-520 enables **NFTs with real liquidity and appreciation**, ideal for gaming ecosystems.  
-✅ **Long-Term Investment Asset** – A **21-year appreciation model** aligns with wealth-building strategies.  
-✅ **Deflationary Tokenomics** – A **fixed-supply valuation token** ensures **price stability and reduced inflation risks**.  
-✅ **Incentivized Creator Economy** – Creators earn **continuous rewards** through liquidation events.  
+```solidity
+uint16[10] memory thresholds = [3, 8, 18, 38, 78, 158, 288, 488, 788, 1000];
+```
 
----
+→ True on-chain rarity, no off-chain metadata (IPFS/Arweave).
 
-## 🏆 Conclusion  
+### Credits & Appreciation
 
-ERC-520 is an **experimental framework** pioneering **Accretive Tokens** as a new asset class, combining the **scarcity of ERC-721 with the liquidity of ERC-20**. Accretive Tokens are **not just static collectibles—they are dynamic assets that evolve and accumulate value over time**.  
+- Original ERC520 standard and reference implementation  
+  → https://github.com/ERC520
+- Internal audit & enhancements for AI/art use cases  
+  → Morpheus community contributors (2025)
+- First 100 Morpheus contributors received 21 mint whitelist spots each as a permanent thank-you
 
-With **built-in appreciation, a deflationary economic model, and creator incentives**, Accretive Tokens are designed for **long-term holders, investors, and innovators**.  
+### Contract Addresses (will be added after deployment)
 
-This isn’t just another experiment—it’s the foundation for turning Accretive Tokens into a widely accepted asset class, redefining digital ownership with built-in appreciation and lasting value. 🚀  
+- AGB-ART NFT: `pending`
+- AGB Token:   `pending` (created automatically on deploy)
 
----
+### Final Thought
 
+AGB-ART is not just another 2,100-supply PFP.
 
+It is the first NFT collection that mathematically guarantees its long-term holders become richer every time someone else leaves the ecosystem.
 
-# SSH is working perfectly now
+Burning is not destruction.  
+Burning is redistribution.
+
+Welcome to accretive art.
+
+— The AGB-ART & Morpheus Team  
+December 2025
