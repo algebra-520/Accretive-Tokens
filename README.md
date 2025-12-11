@@ -1,5 +1,5 @@
-# AGB-ART • Accretive Art on Ethereum  
-**Algebra → AGB (token) + AGB-ART (NFT)**  
+# AGB-ART • Accretive Art on EVM  
+**Algebra → AGB Coin(token) + AGB-ART (NFT)**  
 An enhanced, internally audited fork of the legendary ERC520 Accretive Token standard.
 
 GitHub: https://github.com/ERC520/Accretive-Tokens (original)  
@@ -21,7 +21,7 @@ They forked it, battle-tested it, and turned it into **AGB-ART**:
 - Paired with 21,000,000 AGB tokens (ERC-20)  
 - Backed by a permanent, ever-growing liquidity reserve
 
-As a thank-you to the original ERC520 creators and to seed the new ecosystem, the first 100 Morpheus contributors each received a whitelist for up to 21 free mints during the genesis phase.
+As a thank-you to the original ERC520 creators and to seed the new ecosystem, the first 100 Morpheus contributors each received a MOR whitelist for up to 21 free mints during the genesis phase.
 
 The rest is now open to the world.
 
@@ -40,7 +40,7 @@ The rest is now open to the world.
 ### Detailed Mechanics (from the code)
 
 ```solidity
-uint256 public constant LIQUIDIY_RESERVE = 1_000_000 * 1e18;     // 1M AGB pre-allocated to contract at deploy
+uint256 public constant LIQUIDIY_RESERVE = 1_000_000 * 1e18;    
 uint256 public MAX_GENESIS_SUPPLY = 2_100;
 uint256 public MAX_TOKEN_SUPPLY    = 21_000_000;
 ```
@@ -71,13 +71,13 @@ This creates the cleanest deflationary flywheel in NFT history.
 
 ### Tiered Rarity (on-chain provable randomness)
 
-10 tiers (0–9) determined by Chainlink-style `prevrandao` + user nonce at mint time:
+10 tiers (0–9) determined by `prevrandao` + user nonce at mint time:
 
 ```solidity
 uint16[10] memory thresholds = [3, 8, 18, 38, 78, 158, 288, 488, 788, 1000];
 ```
 
-→ True on-chain rarity, no off-chain metadata (IPFS/Arweave).
+→ True on-chain rarity
 
 ### Credits & Appreciation
 
@@ -85,7 +85,7 @@ uint16[10] memory thresholds = [3, 8, 18, 38, 78, 158, 288, 488, 788, 1000];
   → https://github.com/ERC520
 - Internal audit & enhancements for AI/art use cases  
   → Morpheus community contributors (2025)
-- First 100 Morpheus contributors received 21 mint whitelist spots each as a permanent thank-you
+- First 100 Morpheus contributors received 21 mint spots each as a permanent thank-you
 
 ### Contract Addresses (will be added after deployment)
 
@@ -103,5 +103,5 @@ Burning is redistribution.
 
 Welcome to accretive art.
 
-— The AGB-ART & Morpheus Team  
+— The Algebra, AGB Coin / AGB Art
 December 2025
