@@ -3,7 +3,7 @@
 An enhanced, internally audited fork of the legendary ERC520 Accretive Token standard.
 
 GitHub: https://github.com/ERC520/Accretive-Tokens (original)  
-This repository: A living, community-governed fork created to power digital, media, and AI-generated art initiatives.
+This repository: A living, community-governed fork created to power digital, media, and AI-generated art and creative initiatives.
 
 > “Every burn makes every remaining holder richer — forever.”  
 > That is the promise of the ERC520 accretive model.
@@ -21,9 +21,7 @@ They forked it, battle-tested it, and turned it into **AGB-ART**:
 - Paired with 21,000,000 AGB tokens (ERC-20)  
 - Backed by a permanent, ever-growing liquidity reserve
 
-As a thank-you to the original ERC520 creators and to seed the new ecosystem, the first 100 Morpheus contributors each received a MOR whitelist for up to 21 free mints during the genesis phase.
-
-The rest is now open to the world.
+As a thank-you to the original ERC520 creators and to seed the new ecosystem, the first 100 Morpheus contributors each received a whitelist for up to 21 free mints during the genesis phase with MOR token.
 
 ### How the ERC520 Accretive Model Works
 
@@ -45,7 +43,7 @@ uint256 public MAX_GENESIS_SUPPLY = 2_100;
 uint256 public MAX_TOKEN_SUPPLY    = 21_000_000;
 ```
 
-- 1,000,000 AGB are sent to the contract at deployment → permanent treasury
+- 1,000,000 AGB are sent to the contract at deployment → to creator  → as liquidity on DEX
 - When an NFT is burned:
   ```solidity
   uint256 claimAmount = contractAGBBalance / currentTotalSupply;
@@ -103,5 +101,5 @@ Burning is redistribution.
 
 Welcome to accretive art.
 
-— The Algebra, AGB Coin / AGB Art
+— The Algebra, AGB Coin / AGB Art.
 December 2025
