@@ -16,6 +16,12 @@ contract ERC520 is ERC721, ReentrancyGuard, ERC721Enumerable, ERC721URIStorage {
     uint256 public constant LIQUIDIY_RESERVE = 1_000_000 * 1e18; 
     uint256 public MAX_GENESIS_SUPPLY = 2_100;
     uint256 public MAX_TOKEN_SUPPLY = 21_000_000;
+
+    // Mint payment token (e.g. MOR, USDC, custom token, etc.)
+    IERC20 public immutable mintingToken;
+
+    // 0.25 units 
+    uint256 public constant MINT_PRICE = 0.25 ether; 
     
     address public Creator;
     uint256 public lastID = 0;
@@ -37,7 +43,7 @@ contract ERC520 is ERC721, ReentrancyGuard, ERC721Enumerable, ERC721URIStorage {
     event TokenCreated(address tokenAddress);
     event liquidated(address indexed owner, uint256 indexed tokenId, uint256 liquidatedValue);
     event CreatorRewardClaimed(address indexed claimer, uint256 amount, uint256 blockNumber);
-
+    event Minted(address indexed to, uint256 indexed tokenId, uint256 tier);
 
     constructor(
         string memory _nftName, 
@@ -45,13 +51,17 @@ contract ERC520 is ERC721, ReentrancyGuard, ERC721Enumerable, ERC721URIStorage {
         string memory _tokenName, 
         string memory _tokenTicker, 
         string[] memory metadataURL,
-        address _platformAddress
+        address _platformAddress,
+        address _mintingTokenAddress
     ) ERC721(_nftName, string(abi.encodePacked(_nftTicker))) {
+
+        require(_mintingTokenAddress != address(0), "Invalid minting token");
 
         Creator = msg.sender;
         owners[msg.sender] = true;
         startBlock = block.number;
         PLATFORM = _platformAddress;
+        mintingToken = IERC20(_mintingTokenAddress);
 
         accretiveTokenAddress = address(new AGB(_tokenName, _tokenTicker, address(this)));
         token = IERC20(accretiveTokenAddress);
@@ -71,37 +81,90 @@ contract ERC520 is ERC721, ReentrancyGuard, ERC721Enumerable, ERC721URIStorage {
     }
 
 
-    
-
-    function mint(address _to) public returns (uint256) {
+    // SINGLE MINT – 1 NFT to msg.sender
+    function mint() external nonReentrant returns (uint256) {
         require(lastID < MAX_GENESIS_SUPPLY, "Sold out");
 
-        uint256 nonce = nonces[msg.sender]++;
-        bytes32 hash = keccak256(abi.encodePacked(
-            block.prevrandao,
-            msg.sender,
-            nonce
-        ));
-        uint256 random = uint256(hash) % 1000;
+        require(
+            mintingToken.transferFrom(msg.sender, address(this), MINT_PRICE),
+            "Approve 0.25 mintingToken first"
+        );
 
-        uint16[10] memory thresholds = [3, 8, 18, 38, 78, 158, 288, 488, 788, 1000];
-        uint8 tier = 9;
-        for (uint8 i = 0; i < 10; i++) {
-            if (random < thresholds[i]) {
-                tier = i;
-                break;
-            }
-        }
+        _distributeMintRevenue(MINT_PRICE);
 
-        lastID++;
-
-        _safeMint(_to, lastID); 
-        _setTokenURI(lastID, metadata[tier]);
-        _setTokenIP (lastID, tier);
-
-
-        return lastID;
+        uint256[] memory ids = _mintNFTs(msg.sender, 1);
+        return ids[0]; // return the single tokenId
     }
+
+    // BATCH MINT – up to 21 NFTs to msg.sender
+    function batchMint(uint256 amount) external nonReentrant returns (uint256[] memory tokenIds) {
+        require(amount > 0 && amount <= 21, "Amount 1-21");
+        require(lastID + amount <= MAX_GENESIS_SUPPLY, "Not enough supply");
+
+        uint256 totalPrice = amount * MINT_PRICE;
+
+        require(
+            mintingToken.transferFrom(msg.sender, address(this), totalPrice),
+            "Approve exact amount first"
+        );
+
+        _distributeMintRevenue(totalPrice);
+
+        return _mintNFTs(msg.sender, amount);
+    }
+
+    // Internal: handle 20% Creator / 80% treasury split
+    function _distributeMintRevenue(uint256 totalPrice) internal {
+        uint256 creatorShare = (totalPrice * 20) / 100;
+        uint256 treasuryShare = totalPrice - creatorShare;
+
+        treasuryDebt += treasuryShare;
+        if (creatorShare > 0) {
+            require(mintingToken.transfer(Creator, creatorShare), "Creator payout failed");
+        }
+    }
+
+    // Internal: shared minting + randomness logic
+    function _mintNFTs(address to, uint256 amount) internal returns (uint256[] memory tokenIds) {
+        tokenIds = new uint256[](amount);
+
+        for (uint256 i = 0; i < amount; ) {
+            uint256 nonce = nonces[msg.sender]++;
+
+            bytes32 hash = keccak256(abi.encodePacked(
+                block.prevrandao,
+                msg.sender,
+                nonce,
+                i
+            ));
+            uint256 random = uint256(hash) % 1000;
+
+            uint16[10] memory thresholds = [3, 8, 18, 38, 78, 158, 288, 488, 788, 1000];
+            uint8 tier = 9;
+            for (uint8 j = 0; j < 10; ) {
+                if (random < thresholds[j]) {
+                    tier = j;
+                    break;
+                }
+                unchecked { j++; }
+            }
+
+            lastID++;
+            uint256 tokenId = lastID;
+
+            _safeMint(to, tokenId);
+            _setTokenURI(tokenId, metadata[tier]);
+            _setTokenIP(tokenId, tier);
+
+            tokenIds[i] = tokenId;
+            emit Minted(to, tokenId, tier);
+
+            unchecked { i++; }
+        }
+    }
+
+
+
     
     function totalMetadata ()external view returns  (uint256) {
         return metadata.length;
