@@ -1,105 +1,117 @@
 # AGB-ART • Accretive Art on EVM  
-**Algebra → AGB Coin(token) + AGB-ART (NFT)**  
-An enhanced, internally audited fork of the legendary ERC520 Accretive Token standard.
+**Algebra → AGB Coin (ERC-20) + AGB-ART (ERC-721)**  
+An enhanced, internally audited fork of the legendary ERC520 standard — now with full EIP-2981 royalties and permanent funding for creativity.
 
-GitHub: https://github.com/ERC520/Accretive-Tokens (original)  
-This repository: A living, community-governed fork created to power digital, media, and AI-generated art and creative initiatives.
+GitHub (original): https://github.com/ERC520/Accretive-Tokens  
+This repo: A living, community-governed evolution built to power digital, media, and AI-generated art initiatives forever.
 
 > “Every burn makes every remaining holder richer — forever.”  
-> That is the promise of the ERC520 accretive model.
+> That is the unbreakable promise of the ERC520 accretive model.
 
-### The Story of AGB-ART
+### The Story & Mission of AGB-ART
 
-In 2025, a group of artists, AI researchers, and crypto-native builders came together under the Morpheus umbrella to ask a simple but radical question:
+In 2025, artists, AI researchers, and crypto builders under the Morpheus umbrella asked a simple yet revolutionary question:
 
-> What if an NFT collection could become a self-funding, ever-appreciating treasury for its holders — without royalties, without middlemen, and without ever diluting?
+> What if an NFT collection could become a self-sustaining, ever-growing treasury that funds real-world creative projects — without endless royalties, without middlemen, and without ever diluting?
 
-They found the answer in ERC520 — the cleanest, most elegant deflationary mechanism ever written in Solidity.
+The answer was ERC520.  
+They forked it, battle-tested it, added EIP-2981 royalties, and created **AGB-ART**:
 
-They forked it, battle-tested it, and turned it into **AGB-ART**:  
 - 2,100 Genesis NFTs (AGB-ART)  
-- Paired with 21,000,000 AGB tokens (ERC-20)  
-- Backed by a permanent, ever-growing liquidity reserve
+- Paired with exactly 21,000,000 AGB tokens (Bitcoin-style hard cap)  
+- Backed by a permanent 1,000,000 AGB treasury that grows with every burn  
+- 5% secondary royalty (adjustable 0–10%) + 2.5% burn fee → all dedicated to supporting artists and creative projects
 
-As a thank-you to the original ERC520 creators and to seed the new ecosystem, the first 100 Morpheus contributors each received a whitelist for up to 21 free mints during the genesis phase with MOR token.
+As a permanent thank-you, the first 100 Morpheus contributors each received a whitelist for up to 21 mints during genesis.
 
-### How the ERC520 Accretive Model Works
+### How the Accretive Model Works
 
-| Phase          | What Happens                                                   | Effect on Holders                              |
-|----------------|----------------------------------------------------------------|------------------------------------------------|
-| Genesis Mint   | 2,100 NFTs minted at 0.25 units each                           | 100% of proceeds go to Creator                 |
-| Trading        | NFTs trade freely (OpenSea, Blur, etc.)                        | Normal secondary market — no royalties         |
-| Burn to Earn   | Any holder can burn their NFT after sell-out                   | Contract pays out AGB tokens instantly         |
-| Accretive Loop | Each burn reduces supply by 1                                  | Every remaining NFT now backed by more AGB     |
+| Phase              | What Happens                                                    | Who Benefits & How                                      |
+|--------------------|------------------------------------------------------------------|----------------------------------------------------------|
+| Genesis Mint       | 2,100 NFTs at 0.25 units (MOR/USDC/etc.)                        | 100% of proceeds → Creator treasury                      |
+| Secondary Trading  | Normal sales on OpenSea, Blur, Zora, Magic Eden                 | 5% EIP-2981 royalty → Creator (for art grants)           |
+| Burn to Earn       | Holder burns NFT after sell-out                                 | 95% of treasury share → burner<br>2.5% → Creator treasury<br>2.5% → ERC520.org |
+| Accretive Flywheel | Each burn reduces supply by 1                                   | Remaining NFTs now backed by more AGB — forever          |
 
-→ Every burn permanently increases the AGB backing of all surviving NFTs.
-**The contract holds AGB tokens forever. Every single burn permanently increases the AGB backing of every NFT that is still alive.**
+→ The contract holds AGB tokens permanently. Every burn mathematically increases the backing of every surviving NFT.
 
-### Detailed Mechanics (from the code)
+### Tokenomics — Bitcoin Scarcity + Accretive Superpower
 
-```solidity
-uint256 public constant LIQUIDIY_RESERVE = 1_000_000 * 1e18;    
-uint256 public MAX_GENESIS_SUPPLY = 2_100;
-uint256 public MAX_TOKEN_SUPPLY    = 21_000_000;
-```
+| Feature               | AGB Coin                          | Bitcoin                          |
+|-----------------------|-----------------------------------|----------------------------------|
+| Max Supply            | 21,000,000 (hard-coded)           | 21,000,000                       |
+| Halving               | Every 4 years (in AGB token)      | Every 4 years                    |
+| Final token           | ~Year 2140                        | ~Year 2140                       |
+| Deflation mechanism   | Halving + NFT burns               | Halving only                     |
+| Real backing per NFT  | Permanent treasury growth         | None                             |
 
-- 1,000,000 AGB are sent to the contract at deployment → to creator  → as liquidity on DEX
-- When an NFT is burned:
-  ```solidity
-  uint256 claimAmount = contractAGBBalance / currentTotalSupply;
-  95% → burner (holder)
-   2.5% → original creator
-   2.5% → ERC520.org platform
-  ```
-- The NFT is destroyed forever → totalSupply decreases by 1 → every remaining NFT now backed by more AGB
+AGB = Bitcoin-level scarcity, supercharged.
 
-This creates the cleanest deflationary flywheel in NFT history.
+### Full 2025 Marketplace & DEX Compatibility
 
-### Advantages of the ERC520 / AGB-ART Model
+| Feature                        | Status    | Details                                                                 |
+|--------------------------------|-----------|-------------------------------------------------------------------------|
+| ERC-721 + Enumerable + URIStorage | Implemented | Works everywhere                                                        |
+| EIP-2981 Royalties             | Implemented | 5% default (adjustable 0–10% via `setRoyaltyInfo`) — paid on every trade |
+| Royalty Flexibility            | Implemented | Creator (or future multisig) can change % anytime                        |
+| Batch Mint (up to 21)          | Implemented | Gas-efficient sequential minting                                        |
+| On-chain Provable Rarity       | Implemented | 10 tiers via `prevrandao` — no reveal, no trust needed                   |
+| Sudoswap / NFTX Pools          | Implemented | Works out-of-the-box                                                    |
+| OpenSea, Blur, Zora, Magic Eden | Implemented | Royalties auto-detected and paid                                         |
 
-| Feature                    | Traditional NFTs         | AGB-ART (ERC520)                         |
-|----------------------------|--------------------------|------------------------------------------|
-| Royalty enforcement        | Required (often bypassed)| Not needed — value accrues on burn        |
-| Long-term holder reward    | Only from resale         | Guaranteed AGB increase on every burn    |
-| Treasury sustainability    | Usually drains           | Grows forever with each burn             |
-| Creator ↔ Holder alignment | Often misaligned         | Perfectly aligned                        |
-| Exit liquidity             | Need a buyer             | Instant via burn                         |
-| Supply                     | Often unlimited          | Hard 2,100 cap                           |
-| Dilution risk              | High                     | Literally zero                           |
-
-### Tiered Rarity (on-chain provable randomness)
-
-10 tiers (0–9) determined by `prevrandao` + user nonce at mint time:
+### Tiered Rarity (Fully On-Chain)
 
 ```solidity
-uint16[10] memory thresholds = [3, 8, 18, 38, 78, 158, 288, 488, 788, 1000];
+uint16[10] thresholds = [3, 8, 18, 38, 78, 158, 288, 488, 788, 1000];
+→ Tier 0 (rarest) to Tier 9 (common)
 ```
 
-→ True on-chain rarity
+Metadata assigned at mint time — transparent and immutable.
 
-### Credits & Appreciation
+### Funding Creativity Forever
 
-- Original ERC520 standard and reference implementation  
-  → https://github.com/ERC520
-- Internal audit & enhancements for AI/art use cases  
-  → Morpheus community contributors (2025)
-- First 100 Morpheus contributors received 21 mint spots each as a permanent thank-you
+All secondary royalties (5%) and burn fees (2.5%) flow to the **Creator treasury**, which is dedicated to:
 
-### Contract Addresses (will be added after deployment)
+- Art & AI creation grants  
+- Open-source tooling for generative art  
+- Community events and residencies  
+- Support for underrepresented digital artists
 
-- AGB-ART NFT: `pending`
-- AGB Token:   `pending` (created automatically on deploy)
+This isn’t speculation. This is patronage engineered into the protocol.
+
+### Security & Governance
+
+- Creator role can be transferred to a 2-of-3 Gnosis Safe (recommended)  
+- No pause, no extra minting, no hidden functions  
+- Internally audited by Morpheus contributors (2025)  
+- Supply, price, and reserves are immutable constants
+
+### Contract Addresses (to be updated after deployment)
+
+- AGB-ART NFT: `pending`  
+- AGB Coin:  `pending` (auto-created on deploy)
+
+### Credits & Eternal Gratitude
+
+- Original ERC520 standard → https://github.com/ERC520  
+- Enhancements, audit & art focus → Morpheus community contributors (2025)  
+- First 100 Morpheus contributors received 21 mint whitelist spots each — forever appreciated
 
 ### Final Thought
 
-AGB-ART is not just another 2,100-supply PFP.
+AGB-ART is not just another 2,100-supply collection.
 
-It is the first NFT collection that mathematically guarantees its long-term holders become richer every time someone else leaves the ecosystem.
+It is the first NFT project that mathematically guarantees:
+1. Long-term holders get richer with every burn  
+2. Real-world creativity gets funded forever  
+3. Bitcoin-style scarcity meets NFT utility  
+4. Works perfectly on every major marketplace
 
-Burning is not destruction.  
-Burning is redistribution.
+We are not launching art.  
+We are launching a perpetual patronage engine.
 
 Welcome to accretive art.
 
-— The Algebra, AGB Coin / AGB Art.
+— The Algebra Team  
 December 2025
+
