@@ -114,4 +114,3 @@ Welcome to accretive art.
 
 — The Algebra Team  
 December 2025
-
