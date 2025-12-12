@@ -41,7 +41,7 @@ claimAmount = treasuryBalance ÷ remainingNFTs
 
 Every burn permanently reduces NFT supply and permanently increases AGB backing of every surviving NFT.
 
-![Accretive Flywheel](assets/flywheel.png)
+![Accretive Flywheel](assets/flywheel.jpg)
 
 #### 2.3 Optional Secondary Royalty (EIP-2981)
 
