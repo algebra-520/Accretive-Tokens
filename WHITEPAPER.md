@@ -1,4 +1,3 @@
-![Algebra Cover](assets/cover.jpg)
 
 # Algebra Whitepaper  
 **AGB-ART • Experimental Accretive Backing for Creative Works**  
@@ -81,7 +80,7 @@ No salaries. No marketing. No profit withdrawals.
 | Burn logic                 | Pre-burn calculation, 95/2.5/2.5 split      |
 | Governance                 | Creator role transferable (no renounce)     |
 
-Full audited source code: https://github.com/YOUR_USERNAME/YOUR_REPO
+Full audited source code: https://github.com/algebra-520/Accretive-Tokens
 
 ### 6. Conclusion
 
