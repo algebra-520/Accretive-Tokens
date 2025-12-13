@@ -11,13 +11,17 @@ import "./accretiveToken.sol";
 contract ERC520 is ERC721, ReentrancyGuard, ERC721Enumerable, ERC721URIStorage {
 
     // Connect with ERC520.org and get featured 
-    address public immutable PLATFORM;  // ERC520.org 0xEc134D437173FdaE507E05c69F249a42352Efe62;
+    // ERC520.org 0xEc134D437173FdaE507E05c69F249a42352Efe62;
+    address public immutable PLATFORM;  
 
     uint256 public constant LIQUIDIY_RESERVE = 1_000_000 * 1e18; 
     uint256 public MAX_GENESIS_SUPPLY = 2_100;
     uint256 public MAX_TOKEN_SUPPLY = 21_000_000;
+    
+    address private royaltyReceiver;
+    uint96 private royaltyBps = 500;
 
-    // Mint payment token (e.g. MOR, USDC, custom token, etc.)
+    // Mint payment token (e.g. AGB)
     IERC20 public immutable mintingToken;
 
     // 0.25 units 
@@ -62,6 +66,7 @@ contract ERC520 is ERC721, ReentrancyGuard, ERC721Enumerable, ERC721URIStorage {
         startBlock = block.number;
         PLATFORM = _platformAddress;
         mintingToken = IERC20(_mintingTokenAddress);
+        royaltyReceiver = msg.sender;
 
         accretiveTokenAddress = address(new AGB(_tokenName, _tokenTicker, address(this)));
         token = IERC20(accretiveTokenAddress);
@@ -86,11 +91,9 @@ contract ERC520 is ERC721, ReentrancyGuard, ERC721Enumerable, ERC721URIStorage {
         require(lastID < MAX_GENESIS_SUPPLY, "Sold out");
 
         require(
-            mintingToken.transferFrom(msg.sender, address(this), MINT_PRICE),
+            mintingToken.transferFrom(msg.sender,Creator,MINT_PRICE), 
             "Approve 0.25 mintingToken first"
         );
-
-        _distributeMintRevenue(MINT_PRICE);
 
         uint256[] memory ids = _mintNFTs(msg.sender, 1);
         return ids[0]; // return the single tokenId
@@ -98,31 +101,19 @@ contract ERC520 is ERC721, ReentrancyGuard, ERC721Enumerable, ERC721URIStorage {
 
     // BATCH MINT – up to 21 NFTs to msg.sender
     function batchMint(uint256 amount) external nonReentrant returns (uint256[] memory tokenIds) {
-        require(amount > 0 && amount <= 21, "Amount 1-21");
+        require(amount > 0 && amount <= 100, "Amount 1-21");
         require(lastID + amount <= MAX_GENESIS_SUPPLY, "Not enough supply");
 
         uint256 totalPrice = amount * MINT_PRICE;
 
         require(
-            mintingToken.transferFrom(msg.sender, address(this), totalPrice),
+            mintingToken.transferFrom(msg.sender,Creator, totalPrice),
             "Approve exact amount first"
         );
-
-        _distributeMintRevenue(totalPrice);
 
         return _mintNFTs(msg.sender, amount);
     }
 
-    // Internal: handle 20% Creator / 80% treasury split
-    function _distributeMintRevenue(uint256 totalPrice) internal {
-        uint256 creatorShare = (totalPrice * 20) / 100;
-        uint256 treasuryShare = totalPrice - creatorShare;
-
-        treasuryDebt += treasuryShare;
-        if (creatorShare > 0) {
-            require(mintingToken.transfer(Creator, creatorShare), "Creator payout failed");
-        }
-    }
 
     // Internal: shared minting + randomness logic
     function _mintNFTs(address to, uint256 amount) internal returns (uint256[] memory tokenIds) {
@@ -276,6 +267,7 @@ contract ERC520 is ERC721, ReentrancyGuard, ERC721Enumerable, ERC721URIStorage {
 
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721, ERC721Enumerable, ERC721URIStorage) returns (bool) {
         return (
+            interfaceId == 0x2a55205a ||
             ERC721.supportsInterface(interfaceId) ||
             ERC721Enumerable.supportsInterface(interfaceId) ||
             ERC721URIStorage.supportsInterface(interfaceId)
@@ -289,4 +281,22 @@ contract ERC520 is ERC721, ReentrancyGuard, ERC721Enumerable, ERC721URIStorage {
     ) internal virtual override(ERC721, ERC721Enumerable) returns (address) {
         return super._update(to, tokenId, auth);
     }
+
+    // EIP-2981 standard function
+    function royaltyInfo(uint256 /*tokenId*/, uint256 salePrice)
+        external
+        view
+        returns (address receiver, uint256 royaltyAmount)
+    {
+        return (royaltyReceiver, (salePrice * royaltyBps) / 10_000);
+    }
+
+    // Optional: let creator change it later (very useful)
+    function setRoyaltyInfo(address newReceiver, uint96 newBps) external {
+        require(msg.sender == Creator, "Only Creator");
+        require(newBps <= 1000, "Max 10%"); //  // 1000 bps = 10%
+        royaltyReceiver = newReceiver;
+        royaltyBps = newBps;
+    }
+
 }
