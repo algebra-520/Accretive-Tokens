@@ -299,4 +299,7 @@ contract ERC520 is ERC721, ReentrancyGuard, ERC721Enumerable, ERC721URIStorage {
         royaltyBps = newBps;
     }
 
+
+
+
 }
