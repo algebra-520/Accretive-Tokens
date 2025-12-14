@@ -102,7 +102,7 @@ contract ERC520 is ERC721, ReentrancyGuard, ERC721Enumerable, ERC721URIStorage {
     // BATCH MINT – up to 21 NFTs to msg.sender
     function batchMint(uint256 amount) external nonReentrant returns (uint256[] memory tokenIds) {
         require(amount > 0 && amount <= 21, "Amount 1-21");
-        require(lastID + amount <= MAX_GENESIS_SUPPLY, "Not enough supply");
+        require(lastID + amount <= MAX_GENESIS_SUPPLY, "Sold out");
 
         uint256 totalPrice = amount * MINT_PRICE;
 
