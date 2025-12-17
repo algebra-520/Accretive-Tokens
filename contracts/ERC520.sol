@@ -12,7 +12,7 @@ contract ERC520 is ERC721, ReentrancyGuard, ERC721Enumerable, ERC721URIStorage {
 
     // Connect with ERC520.org and get featured 
     // ERC520.org 0xEc134D437173FdaE507E05c69F249a42352Efe62;
-    address public immutable PLATFORM;  
+    address public immutable ERC520ORG;  
 
     uint256 public constant LIQUIDIY_RESERVE = 1_000_000 * 1e18; 
     uint256 public MAX_GENESIS_SUPPLY = 2_100;
@@ -21,7 +21,7 @@ contract ERC520 is ERC721, ReentrancyGuard, ERC721Enumerable, ERC721URIStorage {
     address private royaltyReceiver;
     uint96 private royaltyBps = 500;
 
-    // Mint payment token (e.g. AGB)
+    // Mint payment token
     IERC20 public immutable mintingToken;
 
     // 0.25 units 
@@ -55,7 +55,7 @@ contract ERC520 is ERC721, ReentrancyGuard, ERC721Enumerable, ERC721URIStorage {
         string memory _tokenName, 
         string memory _tokenTicker, 
         string[] memory metadataURL,
-        address _platformAddress,
+        address _ERC520ORG,
         address _mintingTokenAddress
     ) ERC721(_nftName, string(abi.encodePacked(_nftTicker))) {
 
@@ -64,7 +64,7 @@ contract ERC520 is ERC721, ReentrancyGuard, ERC721Enumerable, ERC721URIStorage {
         Creator = msg.sender;
         owners[msg.sender] = true;
         startBlock = block.number;
-        PLATFORM = _platformAddress;
+        ERC520ORG = _ERC520ORG;
         mintingToken = IERC20(_mintingTokenAddress);
         royaltyReceiver = msg.sender;
 
@@ -184,7 +184,7 @@ contract ERC520 is ERC721, ReentrancyGuard, ERC721Enumerable, ERC721URIStorage {
         // 5. Payout BEFORE burning
         AGB(accretiveTokenAddress).spend(holderAllocation, msg.sender);
         AGB(accretiveTokenAddress).spend(royalty, Creator);
-        AGB(accretiveTokenAddress).spend(royalty, PLATFORM);
+        AGB(accretiveTokenAddress).spend(royalty, ERC520ORG);
 
         // 6. Burn the NFT
         _burn(_tokenId);

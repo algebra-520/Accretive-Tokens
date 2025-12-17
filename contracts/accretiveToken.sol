@@ -18,7 +18,6 @@ contract AGB is ERC20 {
     uint256 public constant TOTAL_EMISSION   = 20_000_000 * 1e18;   // total tokens ever emitted
     uint256 public constant MAX_SUPPLY       = INITIAL_SUPPLY + TOTAL_EMISSION;
     uint256 public constant HALVING_INTERVAL = 126_144_000;        // ~4 years exactly
-    //uint256 public constant HALVING_INTERVAL = 3_600; // exactly 1 hour
     uint256 public constant FINAL_CYCLE      = 34;                 // emission stops forever
 
     // First cycle reward = 10 M (half of total emission)
