@@ -38,7 +38,6 @@ contract ERC520 is ERC721, ReentrancyGuard, ERC721Enumerable, ERC721URIStorage {
 
     IERC20 public token;
     
-    mapping(address => bool) public owners;
     mapping(uint256 => string) private _tokenURIs;
     mapping(uint256 => uint256) public _tokenIP;
     mapping(address => uint256) private nonces;
@@ -56,13 +55,13 @@ contract ERC520 is ERC721, ReentrancyGuard, ERC721Enumerable, ERC721URIStorage {
         string memory _tokenTicker, 
         string[] memory metadataURL,
         address _ERC520ORG,
-        address _mintingTokenAddress
+        address _mintingTokenAddress,
+        address _creator
     ) ERC721(_nftName, string(abi.encodePacked(_nftTicker))) {
 
         require(_mintingTokenAddress != address(0), "Invalid minting token");
 
-        Creator = msg.sender;
-        owners[msg.sender] = true;
+        Creator = _creator;
         startBlock = block.number;
         ERC520ORG = _ERC520ORG;
         mintingToken = IERC20(_mintingTokenAddress);
@@ -78,13 +77,13 @@ contract ERC520 is ERC721, ReentrancyGuard, ERC721Enumerable, ERC721URIStorage {
         token.transfer(msg.sender, LIQUIDIY_RESERVE);
     }
 
+    // Set metadata URLs for tiers
     function setMetadata(string[] memory metadataURL) internal {
         uint256 length = metadataURL.length; 
         for (uint256 i = 0; i < length; i++) {
             metadata.push(metadataURL[i]);
         }
     }
-
 
     // SINGLE MINT – 1 NFT to msg.sender
     function mint() external nonReentrant returns (uint256) {
@@ -154,13 +153,12 @@ contract ERC520 is ERC721, ReentrancyGuard, ERC721Enumerable, ERC721URIStorage {
         }
     }
 
-
-
-    
+    // Get total number of metadata tiers
     function totalMetadata ()external view returns  (uint256) {
         return metadata.length;
     }
 
+    // BURN an NFT to claim accretive token rewards
     function burn(uint256 _tokenId) external nonReentrant {
         // 1. Block burn until all genesis NFTs are minted
         require(lastID >= MAX_GENESIS_SUPPLY, "Minting not finished yet");
@@ -190,37 +188,34 @@ contract ERC520 is ERC721, ReentrancyGuard, ERC721Enumerable, ERC721URIStorage {
         _burn(_tokenId);
     }
 
-
-
+    // Get total accretive token balance held by the contract
     function appreciation() public view returns (uint256) {
         uint256 accretiveValue = token.balanceOf(address(this));
         return accretiveValue;
     }
 
-
-
+    // Set token URI
     function _setTokenURI(uint256 tokenId, string memory uri) internal override {
         _tokenURIs[tokenId] = uri;
     }
 
+    // Set token IP
     function _setTokenIP(uint256 tokenId, uint256 _IP) internal {
         _tokenIP [tokenId] = _IP;
     }
 
-
+    // Get token IP and URI
     function getTokenIP(uint256 tokenId) external view returns (uint256, string memory) {
         return (_tokenIP[tokenId], _tokenURIs[tokenId]);
     }
 
-    
-
-
+    // Override tokenURI to resolve inheritance conflict
     function tokenURI(uint256 tokenId) public view override(ERC721, ERC721URIStorage) returns (string memory) {
         string memory uri = _tokenURIs[tokenId];
         return bytes(uri).length > 0 ? uri : super.tokenURI(tokenId);
     }
 
-
+    // Get all owned NFTs and their tiers
     function ownedNFT(address owner) external view returns (uint256[] memory ids, uint256[] memory tiers) {
         uint256 bal = balanceOf(owner);
         ids = new uint256[](bal);
@@ -233,17 +228,17 @@ contract ERC520 is ERC721, ReentrancyGuard, ERC721Enumerable, ERC721URIStorage {
         return (ids, tiers);
     }
 
-
-
+    // Get both ERC721 and ERC20 balances
     function balanceOfERC520 (address _user) public view returns (uint256, uint256){
-        // balance of ERC721 and ERC20
         return (balanceOf(_user), token.balanceOf(_user));
     }
 
+    // Get all metadata URLs
     function getAllMetadata() external view returns (string[] memory) {
         return metadata;
     }
 
+    // Get ERC520 details
     function getERC520() external view returns (
         string memory, string memory, address, address, uint256, uint256, uint256){
         return (
@@ -257,6 +252,7 @@ contract ERC520 is ERC721, ReentrancyGuard, ERC721Enumerable, ERC721URIStorage {
             );
     }
 
+    // Override _beforeTokenTransfer to resolve inheritance conflict
     function _increaseBalance(address account, uint128 value)
         internal
         virtual
@@ -265,6 +261,7 @@ contract ERC520 is ERC721, ReentrancyGuard, ERC721Enumerable, ERC721URIStorage {
         super._increaseBalance(account, value);
     }
 
+    // The following functions are overrides required by Solidity.
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721, ERC721Enumerable, ERC721URIStorage) returns (bool) {
         return (
             interfaceId == 0x2a55205a ||
@@ -274,6 +271,7 @@ contract ERC520 is ERC721, ReentrancyGuard, ERC721Enumerable, ERC721URIStorage {
         );
     }
 
+    // Override _update to resolve inheritance conflict
     function _update(
         address to,
         uint256 tokenId,
@@ -291,15 +289,13 @@ contract ERC520 is ERC721, ReentrancyGuard, ERC721Enumerable, ERC721URIStorage {
         return (royaltyReceiver, (salePrice * royaltyBps) / 10_000);
     }
 
-    // Optional: let creator change it later (very useful)
+    // Set royalty info
     function setRoyaltyInfo(address newReceiver, uint96 newBps) external {
         require(msg.sender == Creator, "Only Creator");
         require(newBps <= 1000, "Max 10%"); //  // 1000 bps = 10%
         royaltyReceiver = newReceiver;
         royaltyBps = newBps;
     }
-
-
 
 
 }
