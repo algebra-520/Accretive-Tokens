@@ -11,7 +11,7 @@ import "./accretiveToken.sol";
 contract ERC520 is ERC721, ReentrancyGuard, ERC721Enumerable, ERC721URIStorage {
 
     // Connect with ERC520.org and get featured 
-    // ERC520.org 0xEc134D437173FdaE507E05c69F249a42352Efe62;
+    // ERC520.org 0xBEa2defacF004A7867ebD6807ce55c9B4de6C7bD;
     address public immutable ERC520ORG;  
 
     uint256 public constant LIQUIDIY_RESERVE = 1_000_000 * 1e18; 
@@ -25,7 +25,7 @@ contract ERC520 is ERC721, ReentrancyGuard, ERC721Enumerable, ERC721URIStorage {
     IERC20 public immutable mintingToken;
 
     // 0.25 units 
-    uint256 public constant MINT_PRICE = 0.25 ether; 
+    uint256 public constant MINT_PRICE = 1 ether; 
     
     address public Creator;
     uint256 public lastID = 0;
