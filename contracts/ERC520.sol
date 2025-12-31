@@ -10,8 +10,27 @@ import "./accretiveToken.sol";
 
 contract ERC520 is ERC721, ReentrancyGuard, ERC721Enumerable, ERC721URIStorage {
 
-    // Connect with ERC520.org and get featured 
-    // ERC520.org 0xBEa2defacF004A7867ebD6807ce55c9B4de6C7bD;
+/**
+ * ------------------------------------------------------------------------
+ *  Support the ERC520 Open-Source Initiative
+ * ------------------------------------------------------------------------
+ *  Algebra has forked the original ERC520 code and enhanced it for further development.
+ *  We welcome everyone to use, fork, contribute, and build synergy toward a
+ *  more decentralized future.
+ *
+ *  As credit and continued support to ERC520.org, we are committed to its
+ *  long-term growth and open-source initiative, and will retain the official
+ *  ERC520 contribution address.
+ *
+ *  _ERC520ORG (Official Contribution Address):
+ *  0xBEa2defacF004A7867ebD6807ce55c9B4de6C7bD
+ *
+ *  Contributions to ERC520.org help sustain development and ongoing innovation.
+ *  If you fork this repository and choose to contribute, please add your
+ *  details to support.md so we can acknowledge and recognize community supporters.
+ * ------------------------------------------------------------------------
+ */
+
     address public immutable ERC520ORG;  
 
     uint256 public constant LIQUIDIY_RESERVE = 1_000_000 * 1e18; 
@@ -24,7 +43,6 @@ contract ERC520 is ERC721, ReentrancyGuard, ERC721Enumerable, ERC721URIStorage {
     // Mint payment token
     IERC20 public immutable mintingToken;
 
-    // 0.25 units 
     uint256 public constant MINT_PRICE = 1 ether; 
     
     address public Creator;
